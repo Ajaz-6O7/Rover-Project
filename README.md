@@ -22,7 +22,7 @@
     >Power source: 2x Lithium ion 18650 3.7V 2600mAh Cells. connected in 2S formation to get total 7.4V
     >Motor Driver: TB6612FNG 
 
-![Rover Schematic](./hardware/Schematics.png)
+![Schematics](./hardware/Schematics.png)
 [Click here to view the Wiring diagram](./hardware/Wiring_diagram.png)
 
 
