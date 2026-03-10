@@ -19,7 +19,7 @@
     >Input: IR Receiver(HX1838) + Remote
     >Sensors: HC-SR04 Ultrasonic (Upcoming)
     >Motors: 4x TT motor , 1:48 200rpm dual shaft
-    >Power source: 4x Lithium ion 18650 3.7V 2600mAh Cells. connected in 2S 2P formation to get total 7.4V and 5200mAh
+    >Power source: 2x Lithium ion 18650 3.7V 2600mAh Cells. connected in 2S formation to get total 7.4V
     >Motor Driver: TB6612FNG 
 
 ![Rover Schematic](./hardware/Schematics.png)
