@@ -22,6 +22,8 @@ const int threshold = 250;
 
 float measure_Voltage()
 {
+  analogRead(Vpin); 
+  delay(2);
   batteryV = analogRead(Vpin) * (5.0 / 1024.0) * 2.0; // multiplying by 2 two get full voltage reading of battery (V is divided by 2 in two identical Resistors in series.)
 
   Serial.print(batteryV);
