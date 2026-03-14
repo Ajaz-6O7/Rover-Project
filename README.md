@@ -42,5 +42,6 @@
 ### 🟢 Stable Phase (Intelligence)
 
     >Integrate VLM (Vision Language Model) for high-level reasoning.
+    >autonomous navigation.
     >Camera mount for real-time visual processing.
     >Voice/Text command capability for complex tasks.
