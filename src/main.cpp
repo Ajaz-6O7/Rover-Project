@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 #include <IRremote.hpp>
 
 // left motors
@@ -11,20 +12,23 @@ const int R_in1 = 10;
 const int R_in2 = 11;
 const int R_spd_pin = 9;
 
-const int STBY = 4;  // Standby pin on driver
-const int Vpin = A0; // analog pin used to measure voltage of battery
+const int STBY = 4;   // Standby pin on driver
+const int Vpin = A0;  // analog pin used to measure voltage of battery
 
-float batteryV;                  // measured Voltage of battery
-const float LOW_battery_V = 6.6; // Lowest total V level of battery when motors need to be shutdown for protecting  lithium cells from danger zone.
+float batteryV;  // measured Voltage of battery
+const float LOW_battery_V =
+    6.6;  // Lowest total V level of battery when motors need to be shutdown for
+          // protecting  lithium cells from danger zone.
 
 unsigned long Lastdecode = 0;
 const int threshold = 250;
 
-float measure_Voltage()
-{
-  analogRead(Vpin); 
+float measure_Voltage() {
+  analogRead(Vpin);
   delay(2);
-  batteryV = analogRead(Vpin) * (5.0 / 1024.0) * 2.0; // multiplying by 2 two get full voltage reading of battery (V is divided by 2 in two identical Resistors in series.)
+  batteryV = analogRead(Vpin) * (5.0 / 1024.0) *
+             2.0;  // multiplying by 2 two get full voltage reading of battery
+                   // (V is divided by 2 in two identical Resistors in series.)
 
   Serial.print(batteryV);
   Serial.print("V  || ");
@@ -32,8 +36,7 @@ float measure_Voltage()
   return batteryV;
 }
 
-void rover_moveforwad(int speed)
-{
+void rover_moveforwad(int speed) {
   // speed
   analogWrite(L_spd_pin, speed);
   analogWrite(R_spd_pin, speed);
@@ -47,8 +50,7 @@ void rover_moveforwad(int speed)
   digitalWrite(R_in2, LOW);
 }
 
-void rover_movebackward(int speed)
-{
+void rover_movebackward(int speed) {
   // speed
   analogWrite(L_spd_pin, speed);
   analogWrite(R_spd_pin, speed);
@@ -62,8 +64,7 @@ void rover_movebackward(int speed)
   digitalWrite(R_in2, HIGH);
 }
 
-void rover_turnleft(int L_spd, int R_spd)
-{
+void rover_turnleft(int L_spd, int R_spd) {
   // speed
   analogWrite(L_spd_pin, L_spd);
   analogWrite(R_spd_pin, R_spd);
@@ -77,8 +78,7 @@ void rover_turnleft(int L_spd, int R_spd)
   digitalWrite(R_in2, LOW);
 }
 
-void rover_turnright(int L_spd, int R_spd)
-{
+void rover_turnright(int L_spd, int R_spd) {
   // speed
   analogWrite(L_spd_pin, L_spd);
   analogWrite(R_spd_pin, R_spd);
@@ -92,16 +92,14 @@ void rover_turnright(int L_spd, int R_spd)
   digitalWrite(R_in2, HIGH);
 }
 
-void rover_stop()
-{
+void rover_stop() {
   digitalWrite(L_in1, LOW);
   digitalWrite(L_in2, LOW);
   digitalWrite(R_in1, LOW);
   digitalWrite(R_in2, LOW);
 }
 
-void setup()
-{
+void setup() {
   pinMode(L_spd_pin, OUTPUT);
   pinMode(R_spd_pin, OUTPUT);
   pinMode(L_in1, OUTPUT);
@@ -119,51 +117,46 @@ void setup()
   rover_stop();
 }
 
-void loop()
-{
+void loop() {
   measure_Voltage();
-  if (batteryV > LOW_battery_V)
-  {
+  if (batteryV > LOW_battery_V) {
     digitalWrite(STBY, HIGH);
 
-    if (IrReceiver.decode())
-    {
+    if (IrReceiver.decode()) {
       Lastdecode = millis();
 
-      switch (IrReceiver.decodedIRData.command)
-      {
-      case 0x46:
-      case 0x58:
-        Serial.println("forwad, ");
-        rover_moveforwad(255);
-        break;
-      case 0x15:
-      case 0x59:
-        Serial.println("backward, ");
-        rover_movebackward(255);
-        break;
-      case 0x44:
-      case 0x5A:
-        Serial.println("left, ");
-        rover_turnleft(180, 180);
-        break;
-      case 0x43:
-      case 0x5B:
-        Serial.println("right, ");
-        rover_turnright(180, 180);
-        break;
+      switch (IrReceiver.decodedIRData.command) {
+        case 0x46:
+        case 0x58:
+          Serial.println("forwad, ");
+          rover_moveforwad(255);
+          break;
+        case 0x15:
+        case 0x59:
+          Serial.println("backward, ");
+          rover_movebackward(255);
+          break;
+        case 0x44:
+        case 0x5A:
+          Serial.println("left, ");
+          rover_turnleft(180, 180);
+          break;
+        case 0x43:
+        case 0x5B:
+          Serial.println("right, ");
+          rover_turnright(180, 180);
+          break;
       }
       IrReceiver.resume();
     } else {
       Serial.println();
     }
-    if (Lastdecode != 0 && millis() - Lastdecode > threshold)
-    {
+
+    if (Lastdecode != 0 && millis() - Lastdecode > threshold) {
       rover_stop();
     }
-  }
-  else
-  {
+
+  } else {
     digitalWrite(STBY, LOW);
     rover_stop();
     Serial.println("LOW BATTERY!!!");
