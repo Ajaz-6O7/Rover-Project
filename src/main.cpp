@@ -161,5 +161,5 @@ void loop() {
     rover_stop();
     Serial.println("LOW BATTERY!!!");
   }
-  delay(200);
+  delay(10);
 }
