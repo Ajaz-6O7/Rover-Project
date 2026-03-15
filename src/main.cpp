@@ -5,15 +5,19 @@
 // left motors
 const int L_in1 = 7;
 const int L_in2 = 8;
-const int L_spd_pin = 6;
+const int L_spd_pin = 6; //PWM A pin
 
 // right motors
 const int R_in1 = 10;
 const int R_in2 = 11;
-const int R_spd_pin = 9;
+const int R_spd_pin = 9; //PWM B pin
 
-const int STBY = 4;   // Standby pin on driver
-const int Vpin = A0;  // analog pin used to measure voltage of battery
+bool motor_stopped;
+const int STBY = 4;  // Standby pin on driver
+const int MAX_spd = 180;
+const int spd_rate = 5;  // acceleration/deceleration rate when moving(adjust
+                         // to change speed, min = 1, max = MAX_spd val)
+const int Vpin = A0;     // analog pin used to measure voltage of battery
 
 float batteryV;  // measured Voltage of battery
 const float LOW_battery_V =
@@ -22,6 +26,12 @@ const float LOW_battery_V =
 
 unsigned long Lastdecode = 0;
 const int threshold = 250;
+
+// no need to change the values below, these are for commands
+const int Move_Forwad = 1;
+const int Move_Backward = 2;
+const int Turn_Left = 3;
+const int Turn_Right = 4;
 
 float measure_Voltage() {
   analogRead(Vpin);
@@ -92,11 +102,70 @@ void rover_turnright(int L_spd, int R_spd) {
   digitalWrite(R_in2, HIGH);
 }
 
-void rover_stop() {
+bool rover_stop() {
+  for (int s = MAX_spd; s >= 0; s -= spd_rate) {
+    analogWrite(L_spd_pin, s);
+    analogWrite(R_spd_pin, s);
+    delay(10);
+  }
+  motor_stopped = true;
+
   digitalWrite(L_in1, LOW);
   digitalWrite(L_in2, LOW);
   digitalWrite(R_in1, LOW);
   digitalWrite(R_in2, LOW);
+
+  return motor_stopped;
+}
+
+unsigned long int Rover(int command) {
+  switch (command) {
+    case Move_Forwad:
+      if (motor_stopped == true) {
+        for (int s = 0; s <= MAX_spd; s += spd_rate) {
+          rover_moveforwad(s);
+          delay(10);
+        }
+      } else {
+        rover_moveforwad(MAX_spd);
+      }
+      break;
+
+    case Move_Backward:
+      if (motor_stopped == true) {
+        for (int s = 0; s <= MAX_spd; s += spd_rate) {
+          rover_movebackward(s);
+          delay(10);
+        }
+      } else {
+        rover_movebackward(MAX_spd);
+      }
+      break;
+
+    case Turn_Left:
+      if (motor_stopped == true) {
+        for (int s = 0; s <= MAX_spd; s += spd_rate) {
+          rover_turnleft(s, s);
+          delay(10);
+        }
+      } else {
+        rover_turnleft(MAX_spd, MAX_spd);
+      }
+      break;
+
+    case Turn_Right:
+      if (motor_stopped == true) {
+        for (int s = 0; s <= MAX_spd; s += spd_rate) {
+          rover_turnright(s, s);
+          delay(10);
+        }
+      } else {
+        rover_turnright(MAX_spd, MAX_spd);
+      }
+      break;
+  }
+  Lastdecode = millis();
+  return Lastdecode;
 }
 
 void setup() {
@@ -123,28 +192,26 @@ void loop() {
     digitalWrite(STBY, HIGH);
 
     if (IrReceiver.decode()) {
-      Lastdecode = millis();
-
       switch (IrReceiver.decodedIRData.command) {
         case 0x46:
         case 0x58:
           Serial.println("forwad, ");
-          rover_moveforwad(255);
+          Rover(Move_Forwad);
           break;
         case 0x15:
         case 0x59:
           Serial.println("backward, ");
-          rover_movebackward(255);
+          Rover(Move_Backward);
           break;
         case 0x44:
         case 0x5A:
           Serial.println("left, ");
-          rover_turnleft(180, 180);
+          Rover(Turn_Left);
           break;
         case 0x43:
         case 0x5B:
           Serial.println("right, ");
-          rover_turnright(180, 180);
+          Rover(Turn_Right);
           break;
       }
       IrReceiver.resume();
@@ -154,6 +221,8 @@ void loop() {
 
     if (Lastdecode != 0 && millis() - Lastdecode > threshold) {
       rover_stop();
+    } else {
+      motor_stopped = false;
     }
 
   } else {
