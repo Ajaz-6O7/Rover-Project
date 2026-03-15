@@ -3,6 +3,12 @@
 #include <IRremote.hpp>
 
 const int Buzzpin = 12;
+const int Tpin =
+    A1;  // analog pin usd to measure thermistor readings from motor driver.
+const int MAX_SAFE_DRIVER_TEMP =
+    75;  // max safe temperature of IC case of TB6612FNG in which system
+         // shutdown to protect it
+float temperature;
 
 // left motors
 const int L_in1 = 7;
@@ -35,6 +41,18 @@ const int Move_Forwad = 1;
 const int Move_Backward = 2;
 const int Turn_Left = 3;
 const int Turn_Right = 4;
+
+float measure_Temp_of_Driver() {
+  float Voltage_of_Thermistor = analogRead(Tpin) / 1024.0 * 5.0;
+  float current = (5.0 - Voltage_of_Thermistor) / 10000;
+  float resistance = Voltage_of_Thermistor / current;
+
+  temperature =
+      1 / (log(resistance / 10000.0) / 3950.0 + 1 / (25.0 + 273.15)) - 273.15;
+  Serial.print(temperature, 2);
+  Serial.print("C°  ||  ");
+  return temperature;
+}
 
 float measure_Voltage() {
   analogRead(Vpin);
@@ -198,8 +216,9 @@ void setup() {
 }
 
 void loop() {
+  measure_Temp_of_Driver();
   measure_Voltage();
-  if (batteryV > LOW_battery_V) {
+  if (batteryV > LOW_battery_V && temperature <= MAX_SAFE_DRIVER_TEMP) {
     digitalWrite(STBY, HIGH);
 
     if (IrReceiver.decode()) {
@@ -242,13 +261,19 @@ void loop() {
     }
 
   } else {
-    digitalWrite(STBY, LOW);
     rover_stop();
-    if (batteryV >= 0.10 && batteryV <= LOW_battery_V) {
-      Serial.println("LOW BATTERY!!!");
+    digitalWrite(STBY, LOW);
+
+    if ((batteryV >= 0.10 && batteryV <= LOW_battery_V) || temperature > MAX_SAFE_DRIVER_TEMP) {
+      if (temperature > MAX_SAFE_DRIVER_TEMP) {  // optional
+        Serial.print("Driver too hot!!! ||  ");
+      }
+      if (batteryV <= LOW_battery_V) {  // optional
+        Serial.println("LOW BATTERY!!!  ||  ");
+      }
       Alarm();
     } else {
-      Serial.println("NO BATTERY FOUND!!!");
+      Serial.println("NO BATTERY FOUND!!!");  // optional
     }
   }
   delay(10);
