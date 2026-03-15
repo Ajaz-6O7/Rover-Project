@@ -9,6 +9,8 @@
     >4-Wheeled arduino based robot.
     >smooth acceleration and deceleration feature.
     >IR Remote Control: Manual navigation using a standard IR remote.
+    >Driver ovrheat protection by shutting down the driver.
+    >alarm when driver is overheated/Low battery using active buzzer.
     >Obstacle Avoidance: (Work in progress) Ultrasonic sensor integration.
     >Auto shutdown to protect battery: Arduino constantly checks battery voltage and if it falls below 6.6V(3.3V each cell) it cut off power supply to motor thus protecting battery from danger dead zone.
     >more coming...
@@ -22,6 +24,10 @@
     >Motors: 4x TT motor , 1:48 200rpm dual shaft
     >Power source: 2x Lithium ion 18650 3.7V 2600mAh Cells. connected in 2S formation to get total 7.4V
     >Motor Driver: TB6612FNG 
+    >5v Active buzzer
+    >NTC thermister model MF52D-103f-3950
+    >2x 100k Ohms Resistors
+    >1x 10k ohms resistor
 
 ![Schematics](./hardware/Schematics.png)
 [Click here to view the Wiring diagram](./hardware/Wiring_diagram.png)
