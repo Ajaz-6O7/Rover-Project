@@ -2,15 +2,17 @@
 
 #include <IRremote.hpp>
 
+const int Buzzpin = 12;
+
 // left motors
 const int L_in1 = 7;
 const int L_in2 = 8;
-const int L_spd_pin = 6; //PWM A pin
+const int L_spd_pin = 6;  // PWM A pin
 
 // right motors
 const int R_in1 = 10;
 const int R_in2 = 11;
-const int R_spd_pin = 9; //PWM B pin
+const int R_spd_pin = 9;  // PWM B pin
 
 bool motor_stopped;
 const int STBY = 4;  // Standby pin on driver
@@ -25,8 +27,9 @@ const float LOW_battery_V =
           // protecting  lithium cells from danger zone.
 
 unsigned long Lastdecode = 0;
+unsigned long LastBeep = 0;
 const int threshold = 250;
-
+const int BeepGap = 3000;
 // no need to change the values below, these are for commands
 const int Move_Forwad = 1;
 const int Move_Backward = 2;
@@ -44,6 +47,18 @@ float measure_Voltage() {
   Serial.print("V  || ");
 
   return batteryV;
+}
+
+unsigned long Alarm() {
+  if ((millis() - LastBeep) >= BeepGap) {
+    for (int i = 0; i < 4; i++) {
+      digitalWrite(Buzzpin, HIGH);
+      delay(100);
+      digitalWrite(Buzzpin, LOW);
+      delay(100);
+    }
+    LastBeep = millis();
+  }
 }
 
 void rover_moveforwad(int speed) {
@@ -102,23 +117,20 @@ void rover_turnright(int L_spd, int R_spd) {
   digitalWrite(R_in2, HIGH);
 }
 
-bool rover_stop() {
+void rover_stop() {
   for (int s = MAX_spd; s >= 0; s -= spd_rate) {
     analogWrite(L_spd_pin, s);
     analogWrite(R_spd_pin, s);
     delay(10);
   }
-  motor_stopped = true;
 
   digitalWrite(L_in1, LOW);
   digitalWrite(L_in2, LOW);
   digitalWrite(R_in1, LOW);
   digitalWrite(R_in2, LOW);
-
-  return motor_stopped;
 }
 
-unsigned long int Rover(int command) {
+void Rover(int command) {
   switch (command) {
     case Move_Forwad:
       if (motor_stopped == true) {
@@ -164,8 +176,6 @@ unsigned long int Rover(int command) {
       }
       break;
   }
-  Lastdecode = millis();
-  return Lastdecode;
 }
 
 void setup() {
@@ -176,6 +186,7 @@ void setup() {
   pinMode(R_in1, OUTPUT);
   pinMode(R_in2, OUTPUT);
   pinMode(STBY, OUTPUT);
+  pinMode(Buzzpin, OUTPUT);
 
   digitalWrite(STBY, HIGH);
 
@@ -193,6 +204,8 @@ void loop() {
 
     if (IrReceiver.decode()) {
       switch (IrReceiver.decodedIRData.command) {
+        // im using 2 cases for each code beacuse I plan to use 2 remotes, just
+        // 1 case for each is enough.
         case 0x46:
         case 0x58:
           Serial.println("forwad, ");
@@ -214,13 +227,16 @@ void loop() {
           Rover(Turn_Right);
           break;
       }
+      Lastdecode = millis();
       IrReceiver.resume();
-    } else {
+    } else {  // this else statement is completely optional.its for making
+              // serial monitor output looks good.
       Serial.println();
     }
 
     if (Lastdecode != 0 && millis() - Lastdecode > threshold) {
       rover_stop();
+      motor_stopped = true;
     } else {
       motor_stopped = false;
     }
@@ -228,7 +244,12 @@ void loop() {
   } else {
     digitalWrite(STBY, LOW);
     rover_stop();
-    Serial.println("LOW BATTERY!!!");
+    if (batteryV >= 0.10 && batteryV <= LOW_battery_V) {
+      Serial.println("LOW BATTERY!!!");
+      Alarm();
+    } else {
+      Serial.println("NO BATTERY FOUND!!!");
+    }
   }
   delay(10);
 }
