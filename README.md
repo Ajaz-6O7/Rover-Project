@@ -6,7 +6,8 @@
 >The focuses on building foundation, basic input/output based robot.
 ### Features
 
-    >4-Wheeled arduino based robot 
+    >4-Wheeled arduino based robot.
+    >smooth acceleration and deceleration feature.
     >IR Remote Control: Manual navigation using a standard IR remote.
     >Obstacle Avoidance: (Work in progress) Ultrasonic sensor integration.
     >Auto shutdown to protect battery: Arduino constantly checks battery voltage and if it falls below 6.6V(3.3V each cell) it cut off power supply to motor thus protecting battery from danger dead zone.
