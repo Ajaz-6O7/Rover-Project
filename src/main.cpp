@@ -242,18 +242,23 @@ bool Auto_Mode() {
       float R_dist = find_distance(servo_right);
       float L_dist = find_distance(servo_left);
 
-      if (R_dist >= L_dist) {
-        Rover(Turn_Right);
-        LastCall = "Right";
-      } else {
-        Rover(Turn_Left);
-        LastCall = "Left";
-      }
-      delay(300);
-      rover_stop();
-
       Scanner.write(90);
       delay(500);
+
+      if (R_dist >= L_dist) {
+        while(distance < safe_dist) {
+          Rover(Turn_Right);
+          distance = find_distance(servo_front);
+        }
+        LastCall = "Right";
+      } else {
+        while(distance < safe_dist) {
+          Rover(Turn_Left);
+          distance = find_distance(servo_front);
+        }
+        LastCall = "Left";
+      }
+      rover_stop();
     }
     measure_Voltage();
     if (batteryV < LOW_battery_V) {
