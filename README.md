@@ -5,6 +5,8 @@
 ## 🚀 Phase 1: Alpha (Current)
 >The focuses on building foundation, basic input/output based robot.
 
+>obstacle avoidance feature showcase:
+
 https://github.com/user-attachments/assets/b6ce4320-d598-4152-bf0c-98a25c36b5d3
 
 ### Features
