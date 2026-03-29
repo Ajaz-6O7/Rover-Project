@@ -36,7 +36,7 @@ https://github.com/user-attachments/assets/b6ce4320-d598-4152-bf0c-98a25c36b5d3
 
 
 ![Schematics](./hardware/Schematics.png)
-[Click here to view the Wiring diagram](./hardware/Wiring_diagram.png)
+![Wiring_diagram](./hardware/Wiring_diagram.png)
 
 
 ## 🗺️ The Master Plan
